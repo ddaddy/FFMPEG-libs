@@ -15,6 +15,18 @@ jobs:
       uses: actions/checkout@v3
 
     # Zip the files or folders (modify the paths to target the files you want)
+    - name: Zip ffmpeg-ios
+      run: |
+        zip -r -y ffmpeg-kit-full-6.0-ios-xcframework.zip ffmpeg-kit-full-6.0-ios-xcframework
+        ls -lah  # To display the zipped file in the log
+
+    # Zip the files or folders (modify the paths to target the files you want)
+    - name: Zip ffmpeg-macOS
+      run: |
+        zip -r -y ffmpeg-kit-full-6.0-macos-xcframework.zip ffmpeg-kit-full-6.0-macos-xcframework
+        ls -lah  # To display the zipped file in the log
+
+    # Zip the files or folders (modify the paths to target the files you want)
     - name: Zip libavcodec
       run: |
         zip -r -y libavcodec.xcframework.zip libavcodec.xcframework
@@ -59,20 +71,24 @@ jobs:
     # Generate checksums for the zip files
     - name: Generate SHA256 checksum for zips
       run: |
-        checksum1=$(sha256sum ./libavcodec.xcframework.zip | awk '{ print $1 }')
-        checksum2=$(sha256sum ./libavdevice.xcframework.zip | awk '{ print $1 }')
-        checksum3=$(sha256sum ./libavfilter.xcframework.zip | awk '{ print $1 }')
-        checksum4=$(sha256sum ./libavformat.xcframework.zip | awk '{ print $1 }')
-        checksum5=$(sha256sum ./libavutil.xcframework.zip | awk '{ print $1 }')
-        checksum6=$(sha256sum ./libswresample.xcframework.zip | awk '{ print $1 }')
-        checksum7=$(sha256sum ./libswscale.xcframework.zip | awk '{ print $1 }')
+        checksum1=$(sha256sum ./ffmpeg-kit-full-6.0-ios-xcframework.zip | awk '{ print $1 }')
+        checksum2=$(sha256sum ./ffmpeg-kit-full-6.0-macos-xcframework.zip | awk '{ print $1 }')
+        checksum3=$(sha256sum ./libavcodec.xcframework.zip | awk '{ print $1 }')
+        checksum4=$(sha256sum ./libavdevice.xcframework.zip | awk '{ print $1 }')
+        checksum5=$(sha256sum ./libavfilter.xcframework.zip | awk '{ print $1 }')
+        checksum6=$(sha256sum ./libavformat.xcframework.zip | awk '{ print $1 }')
+        checksum7=$(sha256sum ./libavutil.xcframework.zip | awk '{ print $1 }')
+        checksum8=$(sha256sum ./libswresample.xcframework.zip | awk '{ print $1 }')
+        checksum9=$(sha256sum ./libswscale.xcframework.zip | awk '{ print $1 }')
         echo "::set-output name=asha256::$checksum1"
         echo "::set-output name=bsha256::$checksum2"
-        echo "::set-output name=csha256::$checksum2"
-        echo "::set-output name=dsha256::$checksum2"
-        echo "::set-output name=esha256::$checksum2"
-        echo "::set-output name=fsha256::$checksum2"
-        echo "::set-output name=gsha256::$checksum2"
+        echo "::set-output name=csha256::$checksum3"
+        echo "::set-output name=dsha256::$checksum4"
+        echo "::set-output name=esha256::$checksum5"
+        echo "::set-output name=fsha256::$checksum6"
+        echo "::set-output name=gsha256::$checksum7"
+        echo "::set-output name=hsha256::$checksum8"
+        echo "::set-output name=isha256::$checksum9"
         echo "FIRST_CHECKSUM=$checksum1" >> $GITHUB_ENV
         echo "SECOND_CHECKSUM=$checksum2" >> $GITHUB_ENV
         echo "THIRD_CHECKSUM=$checksum3" >> $GITHUB_ENV
@@ -80,6 +96,8 @@ jobs:
         echo "FIFTH_CHECKSUM=$checksum5" >> $GITHUB_ENV
         echo "SIXTH_CHECKSUM=$checksum6" >> $GITHUB_ENV
         echo "SEVENTH_CHECKSUM=$checksum7" >> $GITHUB_ENV
+        echo "EIGHTH_CHECKSUM=$checksum8" >> $GITHUB_ENV
+        echo "NINTH_CHECKSUM=$checksum9" >> $GITHUB_ENV
 
     # Create a GitHub release and upload the zip file to it
     - name: Create GitHub Release
@@ -96,13 +114,37 @@ jobs:
           ## Release ${{ github.ref }}
           
           ### Checksums
-          - **libavcodec.xcframework.zip**: `${{ env.FIRST_CHECKSUM }}`
-          - **libavdevice.xcframework.zip**: `${{ env.SECOND_CHECKSUM }}`
-          - **libavfilter.xcframework.zip**: `${{ env.THIRD_CHECKSUM }}`
-          - **libavformat.xcframework.zip**: `${{ env.FOURTH_CHECKSUM }}`
-          - **libavutil.xcframework.zip**: `${{ env.FIFTH_CHECKSUM }}`
-          - **libswresample.xcframework.zip**: `${{ env.SIXTH_CHECKSUM }}`
-          - **libswscale.xcframework.zip**: `${{ env.SEVENTH_CHECKSUM }}`
+          - **ffmpeg-kit-full-6.0-ios-xcframework.zip**: `${{ env.FIRST_CHECKSUM }}`
+          - **ffmpeg-kit-full-6.0-macos-xcframework.zip**: `${{ env.SECOND_CHECKSUM }}`
+          - **libavcodec.xcframework.zip**: `${{ env.THIRD_CHECKSUM }}`
+          - **libavdevice.xcframework.zip**: `${{ env.FOURTH_CHECKSUM }}`
+          - **libavfilter.xcframework.zip**: `${{ env.FIFTH_CHECKSUM }}`
+          - **libavformat.xcframework.zip**: `${{ env.SIXTH_CHECKSUM }}`
+          - **libavutil.xcframework.zip**: `${{ env.SEVENTH_CHECKSUM }}`
+          - **libswresample.xcframework.zip**: `${{ env.EIGHTH_CHECKSUM }}`
+          - **libswscale.xcframework.zip**: `${{ env.NINTH_CHECKSUM }}`
+
+    # Upload the zip file as a release asset
+    - name: Upload ffmpeg-ios Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ffmpeg-kit-full-6.0-ios-xcframework.zip
+        asset_name: ffmpeg-kit-full-6.0-ios-xcframework.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Add GITHUB_TOKEN to the upload asset step
+
+    # Upload the zip file as a release asset
+    - name: Upload ffmpeg-macOS Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ffmpeg-kit-full-6.0-macos-xcframework.zip
+        asset_name: ffmpeg-kit-full-6.0-macos-xcframework.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Add GITHUB_TOKEN to the upload asset step
 
     # Upload the zip file as a release asset
     - name: Upload libavcodec Asset
